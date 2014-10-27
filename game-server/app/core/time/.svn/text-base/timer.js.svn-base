@@ -1,0 +1,42 @@
+/**
+ * Created by surui on 14-2-14.
+ */
+var logger=require('pomelo-logger').getLogger(__filename);
+
+/**
+ * created by pingshi 13-11-27
+ * 用户管理
+ * @constructor
+ */
+function Timer(){
+
+}
+
+var tasks = {};
+
+Timer.delay = function( id, cb, delay){
+	logger.info('增加延时回调:'+id);
+	var id = id;
+	var delay = delay;
+	var cb = cb;
+	var task = setTimeout(function(cb, params){
+		cb.apply(null, params);
+		delete tasks[id];
+	}, delay, cb, tasks, id, Array.prototype.slice.call(arguments, 3));
+	tasks[id] = task;
+}
+
+Timer.cancel = function( id ){
+	logger.info('取消延时回调:'+id);
+	var task = tasks[id];
+	if(task != null){
+		try{
+			clearTimeout(task);
+			delete tasks[id];
+		} catch (err){
+			logger.info(err.data);
+		}
+	}
+}
+
+module.exports=Timer;

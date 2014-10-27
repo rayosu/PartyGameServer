@@ -1,0 +1,28 @@
+{
+	"development":{
+
+		"hall": [
+			{"id": "hall-server-1", "host": "127.0.0.1", "port": 3150, "clientPort": 3110, "frontend": true},
+			{"id": "hall-server-2", "host": "127.0.0.1", "port": 3151, "clientPort": 3111, "frontend": true, "connectorType": "socketio"}
+		],
+		"game": [
+			{"id": "game-server-1", "host": "127.0.0.1", "port": 3250}
+		],
+        "db": [
+            {"id": "db-server-1", "host": "127.0.0.1", "port": 3350}
+        ]
+
+	},
+	"production":{
+		"hall": [
+			{"id": "hall-server-1", "host": "127.0.0.1", "port": 3150, "clientPort": 3110, "frontend": true},
+			{"id": "hall-server-2", "host": "127.0.0.1", "port": 3151, "clientPort": 3111, "frontend": true, "connectorType": "socketio"}
+		],
+		"game": [
+			{"id": "game-server-1", "host": "127.0.0.1", "port": 3250}
+		],
+        "db": [
+            {"id": "db-server-1", "host": "127.0.0.1", "port": 3350}
+        ]
+  }
+}

@@ -1,0 +1,37 @@
+// 标注[可选字段]的数据,是表示不一定会传递的字段(根据实际需要传递)
+{
+	'login_callback_data' = {
+		'inRoom':inRoom,			//是否在房间内 1 - 在某房间中; 0 - 不在任何房间中
+		'userId':userId,			//你的ID
+		'userName':userName,		//你的名字
+		'keyword':keyword,			//玩家分配到的关键词(可选字段)
+		'room' = {					//(可选字段)
+			'roomId':roomId,		//房间号
+			'ucNum':ucNum,			//房间剩余卧底数
+			'allUcNum':allUcNum,	//房间卧底总数
+			'playerNum':playerNum,	//房间总玩家数
+			'liveNum':liveNum,		//未出局人数
+			'status':status			//0 - 准备状态; 1 - 游戏开始
+		},
+		'players' = [{				//(可选字段)
+			'userId':userId,		//玩家ID
+			'userName':userName,	//玩家名字
+			'site':site,			//玩家座位号
+			'status':status,		//玩家状态(0-正常状态,1-平票参与重投票状态)不知道你有没有用.
+			'ready':ready,
+			'hasVoted':hasVoted,	//是否已投票
+			'targetId':targetId,	//投票给哪个玩家
+			'said':said,			//是否已经描述
+			'sayContent':sayContent,//描述
+			'dead':dead				//0-生还,1-出局,2-当前出局(新版的设计中,1和2可能对于你来说没什么区别)
+		},{
+			'userId':userId,
+			'userName':userName,
+			'status':status,
+			'hasVoted':hasVoted,
+			'targetId':targetId,
+			'sayContent':sayContent,
+			'dead':dead
+		}]
+	}
+}

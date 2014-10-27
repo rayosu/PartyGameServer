@@ -1,0 +1,11 @@
+{
+  "name": "serviceExecuter",
+  "version": "1.0.0",
+  "description": "service execute center",
+  "main": "serviceExecuter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "surui",
+  "license": "BSD-2-Clause"
+}

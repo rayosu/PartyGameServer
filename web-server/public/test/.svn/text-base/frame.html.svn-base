@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Pomelo</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <script src="js/jquery.js"></script>
+    <script src="js/lib/build/build.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        require('boot');
+    </script>
+    <!--<script src="js/lib/socket.io.js"></script>-->
+    <!--<script src="js/lib/pomeloclient.js"></script>-->
+    <script type="text/javascript">
+        var pomelo = window.pomelo;
+        var userId=-1;
+        //连接connector
+        pomelo.init({
+//            host: "127.0.0.1",
+            host: "115.29.178.104",
+            port: "3110",
+            log: true
+        },function(data){
+            tip('创建连接成功');
+        });
+        pomelo.on('joinRoom', function (msg) {
+            var data=msg.data;
+            tip(data['userName']+"加进来啦!!!"+" userId:"+data['userId']);
+
+        });
+        pomelo.on('quitRoom',function(msg){
+            alert('玩家id:' + msg.data.userId+"离开了房间");
+        })
+
+        pomelo.on('ready',function(msg){
+            var data = msg.data;
+            tip('玩家已准备: '+data.userId);
+        });
+
+        pomelo.on('startGame', function (msg) {
+
+            tip('游戏开始,你分配到的关键词为: '+msg.data.keyword);
+            document.getElementById('keyword').value=msg.data.keyword;
+        });
+
+        pomelo.on('say',function(msg){
+            var data = msg.data;
+            tip('玩家'+data.userId+'关键词描述: '+data.content);
+        });
+
+        pomelo.on('chat',function(msg){
+            var data = msg.data;
+            tip('收到玩家'+data.userId+'聊天信息: '+data.content);
+        });
+
+        pomelo.on('vote',function(msg){
+            var data = msg.data;
+            tip('玩家已投票: '+data.userId);
+        });
+
+        pomelo.on('endVote', function (msg) {
+            tip('收到投票结束事件');
+            var data=msg.data;
+            var status = data.status;
+            var votes = data.votes;
+            var players = data.players;
+            var player;
+            // 找到卧底
+            if(status == 1){
+                tip('找到卧底!');
+                for(var i in players){
+                    player = players[i];
+                    // 刚死的卧底
+                    if(player.dead == 2){
+                        // 我就是卧底
+                        if(player.userId == userId){
+                            tip('我被发现了,卧底就是我!');
+                        } else {
+                            tip('找到卧底了,卧底是:'+player.userId+' '+player.votes+'票');
+                        }
+                    }
+                }
+                tip('还有其他卧底!游戏继续!');
+            }
+            // 卧底获胜
+            else if(status == 2){
+                tip('卧底获胜!');
+                for(var i in players){
+                    player = players[i];
+                    // 刚死的卧底
+                    if(player.ucFlag == 1){
+                        // 我就是卧底
+                        if(player.userId == userId){
+                            tip('我赢了,卧底就是我!');
+                        } else {
+                            tip('卧底赢了,卧底是:'+player.userId);
+                        }
+                    }
+                }
+            }
+            // 平民冤死
+            else if(status == 3){
+                tip('平民冤死!');
+                for(var i in players){
+                    player = players[i];
+                    // 刚死的平民
+                    if(player.dead == 2){
+                        // 我就是被冤死的平民
+                        if(player.userId == userId){
+                            tip('我被冤死了,卧底不是我!');
+                        } else {
+                            tip('冤死平民了,玩家被冤死:'+player.userId+' '+player.votes+'票');
+                        }
+                    }
+                }
+            }
+            // 平民获胜
+            else if(status == 4){
+                tip('平民获胜!');
+                for(var i in players){
+                    player = players[i];
+                    // 刚死的卧底
+                    if(player.ucFlag == 0){
+                        // 我就是获胜的平民
+                        if(player.userId == userId){
+                            tip('我是平民,我赢了!');
+                        } else {
+                            tip('平民是:'+player.userId);
+                        }
+                    } else {
+                        // 我就是获胜的平民
+                        if(player.userId == userId){
+                            tip('我是卧底,我输了!');
+                        } else {
+                            tip('卧底是:'+player.userId);
+                        }
+                    }
+                }
+                tip('所有卧底已经找出来了!游戏结束!');
+            }
+            // 玩家票数持平
+            else if(status == 5){
+                tip('票数持平!');
+                for(var i in players){
+                    player = players[i];
+                    // 刚死的卧底
+                    if(player.sameVote == 1){
+                        // 我就是获胜的平民
+                        if(player.userId == userId){
+                            tip('票数持平,有我一份!');
+                        } else {
+                            tip('票数持平,持平玩家:'+player.userId+' '+player.votes+'票');
+                        }
+                    }
+                }
+            }
+            // 异常情况
+            else {
+                alert('返回投票结果状态不对!');
+            }
+        });
+
+        pomelo.on('offline', function (msg) {
+            var data = msg.data;
+
+            if(userId==data.userId){
+                tip('你掉线了!');
+
+            } else {
+                tip('玩家掉线:'+data.userId);
+            }
+        });
+
+        pomelo.on('dismiss', function (msg) {
+            var data = msg.data;
+            tip('房间被解散了!');
+        });
+        pomelo.on('leaveRoom', function (msg) {
+            var data = msg.data;
+            tip('有人离开了!,离开的人是:'+data.userId);
+        });
+
+        pomelo.on('disconnect', function () {
+            alert('掉线了!!!');
+        });
+
+        function login(){
+            var userId = document.getElementById('userId').value;
+            var userName = document.getElementById('userName').value;
+            var data = {};
+            if(userId){
+                data['userId'] = userId;
+            }
+            if(userName){
+                data['userName'] = userName;
+            }
+            pomelo.request('hall.hallHandler.login',{cmd:'login', data:data},function(msg){
+                document.getElementById('userId').value = msg.data.userId;
+                document.getElementById('userName').value = msg.data.userName;
+                tip('登录成功,用户ID: '+msg.data.userId +', 昵称:'+msg.data.userName);
+            })
+        }
+
+        function joinRoom() {
+            var userName = $('#userName').val();
+            var roomId = $('#roomId').val();
+            pomelo.request("game.wodiHandler.entry", {cmd:"joinRoom",data:{userName: userName, roomId: roomId, type: 1}}, function (msg) {
+                if(msg.code == 0){
+                    //tip('users=> ' + data.users + ' code=> ' + data.code);
+                    var data=msg.data;
+                    //alert(JSON.stringify(msg));
+                    tip('房间号为:'+data.roomId+" 用户ID:"+data.userId);
+                    userId=data.userId;
+//                    document.getElementById('userId').value = data.userId;
+                    for(var a in data.players){
+                        tip(data.players[a].userName+' '+data.players[a].userId);
+                    }
+                } else {
+                    alert(msg.tips);
+                }
+            });
+        }
+        function leaveRoom(){
+            pomelo.request('game.wodiHandler.entry',{cmd:'leaveRoom',data:{}},function(msg){
+                if(msg.code==0){
+                    tip('你离开了房间');
+                }else{
+                    tip('退出房间失败!');
+                }
+            });
+        }
+        function ready(){
+            pomelo.request("game.wodiHandler.entry", {cmd:"ready",data:{}}, function (msg) {
+                if(msg.code == 0){
+                    tip('我已准备!');
+                } else {
+                    alert(msg.tips);
+                }
+            });
+        }
+
+        function say(){
+            var content = $('#say').val();
+            pomelo.request("game.wodiHandler.entry", {cmd:"say",data:{content:content}}, function (msg) {
+                if(msg.code == 0){
+                    tip('我的描述是:'+content);
+                } else {
+                    alert(msg.tips);
+                }
+            });
+        }
+
+        function chat(){
+            var content = $('#chat').val();
+            pomelo.request("game.wodiHandler.entry", {cmd:"chat",data:{content:content}}, function (msg) {
+                if(msg.code == 0){
+                    tip('发送聊天信息:'+content);
+                } else {
+                    alert(msg.tips);
+                }
+            });
+        }
+
+        function vote(t) { // 投票
+            var userId = $('#vote').val();
+            pomelo.request("game.wodiHandler.entry",{cmd:"vote",data:{userId: userId}}, function (msg) {
+                if(msg.code==0){
+                    tip('投票成功! 你投了:'+userId);
+                }else{
+                    alert(msg.tips);
+                }
+            });
+        }
+
+        function listRoom(next){
+            var count = $('#count').val(),
+                    type = parseInt($("#roomType").val()),
+                    fromRoomId = 0;
+            if(next == 0){
+                fromRoomId = $('#firstRoomId').val();
+            } else if(next == 1){
+                fromRoomId = $('#lastRoomId').val();
+            } else {
+                fromRoomId = 0;
+            }
+            pomelo.request("game.wodiHandler.entry",{cmd:"listRoom",data:{type:type, roomId: fromRoomId, count: count, next: next}}, function (msg) {
+                if(msg.code==0){
+                    var rooms = msg.data.rooms;
+                    if(rooms && rooms.length != 0){
+                        tip('============== 房间总数:'+rooms.length);
+                        for(var i = 0; i < rooms.length; i ++){
+                            var roomInfo = rooms[i];
+                            tip('== |房间号:'+roomInfo.id+'|房间状态:'+roomInfo.s+'|房间人数:'+roomInfo.n);
+                        }
+                        $('#firstRoomId').val(rooms[0].id);
+                        $('#lastRoomId').val(rooms[rooms.length - 1].id);
+                    } else {
+                        tip('没有房间了!');
+                    }
+                }else{
+                    alert(msg.tips);
+                }
+            });
+        }
+        function getActions(){
+            pomelo.request("game.wodiHandler.entry",{cmd:"getActions",data:{}}, function (msg) {
+                if(msg.code==0){
+                    var data = msg.data;
+                    if(data && data.actions){
+                        tip('============== 惩罚列表:');
+                        var actions = data.actions;
+                        for(var i = 0; i < actions.length; i++){
+                            var action = actions[i];
+                            tip('== |惩罚类型:'+action.type+'|惩罚内容:'+action.content);
+                        }
+                    }
+                }else{
+                    alert(msg.tips);
+                }
+            });
+        }
+        function tip(str){
+            $('#tip').append(str + '<br>');
+        }
+    </script>
+
+</head>
+<body>
+<div>
+    <hr/>
+    关键词:<text type="text" id="keyword"/>
+    <hr/>
+    用户ID:<input type="text" id="userId"/>    &nbsp;&nbsp;
+    昵称:<input type="text" id="userName"/>   &nbsp;&nbsp;
+    <input type="button" value="登录" onclick="login()"/>
+    <hr/>
+    房间号:<input type="text" id="roomId"/>   &nbsp;&nbsp;<input type="button" value="加入房间" onclick="joinRoom()"/>
+    <input type="button" value="准备" onclick="ready()" id="start"/>
+    <hr/>
+    关键词描述:<input type="text" id="say"/><input type="button" value="发送描述" onclick="say()"/>
+    <input type="button" value="离开房间" onclick="leaveRoom()"/>
+    <hr/>
+    投给玩家的ID:<input type="text" id="vote"/>&nbsp;&nbsp;<input type="button" value="投票" onclick="vote();"/>
+    <hr/>
+    发送聊天:<input type="text" id="chat"/><input type="button" value="发送聊天" onclick="chat()"/>
+    <hr/>
+    <input type="text" hidden="true" id="firstRoomId" value="1"/><input type="text" hidden="true" id="lastRoomId" value="1"/>
+    房间数量:<input type="text" id="count" value="10"/>房间类型:<input type="text" id="roomType" value="1"/>
+    <hr/>
+    <input type="button" value="首页" onclick="listRoom(-1)"/><input type="button" value="上一页房间" onclick="listRoom(0)"/><input type="button" value="下一页房间" onclick="listRoom(1)"/>
+    <hr/><input type="button" value="获取惩罚列表" onclick="getActions()"/>
+    <hr/>
+    <p id="tip"></p>
+    <p id="users"></p>
+</div>
+</body>
+</html>

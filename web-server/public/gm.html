@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Pomelo</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <script src="test/js/jquery.js"></script>
+    <script src="test/js/lib/build/build.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        require('boot');
+        (function( win ){
+            var cache = {}
+            function tmpl( str, data ){
+                var fn = !/\W/.test( str ) ? cache[ str ] = cache[ str ] || tmpl( document.getElementById( str ).innerHTML)
+                        : new Function('obj', 'var p =[], print = function(){ p.push.apply( p, arguments )};' +
+                        "with( obj ){ p.push('"+
+                        str.replace(/[\r\t\n]/g, '')	//将回车,制表符,换行替换成空
+                                .split('<%').join('\t')
+                                .replace(/((^|%>)[^\t]*)'/g, '$1\r')
+                                .replace(/\t=(.*?)%>/g, "',$1,'")
+                                .split('\t').join("');")
+                                .split('%>').join("p.push('")
+                                .split("\r").join("\\'")
+
+                        +"');} return p.join('');")
+                return data ? fn( data ) : fn;
+            }
+            win.tmpl = tmpl
+        })( window )
+    </script>
+
+    <style>
+        table{
+            border: 1px #999 solid;
+        }
+        table td{
+            text-align: center;
+        }
+        table tr.select td{
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<script>
+
+    function test_2(){
+
+    }
+    function nicheng(){
+        var username = $('#newName').val();
+        pomelo.request("game.wodiHandler.entry", {cmd:"modifyName",data:{userName: username}}, function (data) {
+            alert(data);
+        });
+    }
+</script>
+<body>
+<div>
+    <!--用户ID:<input type="text" id="userId"/>    &nbsp;&nbsp;-->
+    <!--昵称:<input type="text" id="userName"/>   &nbsp;&nbsp;-->
+    <!--<input type="button" value="登录" onclick="login()"/>-->
+    <!--<hr/>-->
+    <!--房间号:<input type="text" id="roomId"/>   &nbsp;&nbsp;<input type="button" value="监听房间" onclick="gm()"/>-->
+    <!--<hr/>-->
+    <!--<p id="tip"></p>-->
+    <!--<p id="users"></p>-->
+</div>
+<div>
+    <table width="100%">
+        <thead>
+        <tr>
+            <th>房间编号</th>
+            <th>房主编号</th>
+            <th>卧底编号</th>
+            <th>关键词</th>
+            <th>当前卧底数</th>
+            <th>总卧底数</th>
+            <th>玩家数</th>
+            <th>生还玩家数</th>
+            <th>房间状态</th>
+            <th>加人锁</th>
+        </tr></thead>
+        <tbody id="roomList"></tbody>
+    </table>
+</div>
+<script type="text/html" id="roomItem">
+    <tr>
+        <td class="roomId"><%=roomId%></td>
+        <td><%=hostId%></td>
+        <td><%=ucIds%></td>
+        <td><%=keywords%></td>
+        <td><%=ucNum%></td>
+        <td><%=allUcNum%></td>
+        <td><%=playerNum%></td>
+        <td><%=liveNum%></td>
+        <td><%=status%></td>
+        <td><%=locked%></td>
+    </tr>
+</script>
+<div>
+    <table width="100%">
+        <thead>
+        <tr>
+            <th>玩家编号</th>
+            <th>玩家名称</th>
+            <th>房间编号</th>
+            <th>卧底标识</th>
+            <th>死亡</th>
+            <th>状态</th>
+            <th>关键词</th>
+            <th>票数</th>
+            <th>房主</th>
+            <th>已投票</th>
+        </tr></thead>
+        <tbody id="playerList"></tbody>
+    </table>
+</div>
+<script type="text/template" id="playerItem">
+    <tr>
+        <td class="userId"><%=userId%></td>
+        <td><%=userName%></td>
+        <td><%=roomId%></td>
+        <td><%=ucFlag%></td>
+        <td><%=dead%></td>
+        <td><%=status%></td>
+        <td><%=keyword%></td>
+        <td><%=votes%></td>
+        <td><%=host%></td>
+        <td><%=hasVoted%></td>
+    </tr>
+</script>
+
+<script type="text/javascript">
+    var pomelo = window.pomelo;
+    var userId=-1;
+    var $roomList= $('#roomList');
+    var $playerList = $('#playerList');
+    var roomItemTmpl = $('roomItem').html();
+    var playerItemTmpl = $('playerItem').html();
+    var currRoomId = 0;
+    //连接connector
+    pomelo.init({
+        host: "127.0.0.1",
+//        host: "115.29.178.104",
+        port: "3110",
+        log: true
+    },function(data){
+        login();
+    });
+
+    function login(){
+        pomelo.request('hall.hallHandler.login',{cmd:'login', data:{}},function(msg){
+            gm();
+        })
+    }
+    function gm(){
+        pomelo.request('game.wodiHandler.entry',{cmd:'gm', data:{}},function(msg){
+            tip('gm登陆成功!');
+        })
+    }
+    pomelo.on('users', function (msg) {
+        var users=msg.data;
+        tip(JSON.stringify(users));
+    });
+//    pomelo.on('roomPlayers', function (msg) {
+//        var roomPlayers=msg.data;
+//        tip(JSON.stringify(roomPlayers));
+//    });
+    pomelo.on('rooms', function (msg) {
+        var rooms=msg.data;
+        var html = "";
+        for(var key in rooms){
+            html +=tmpl( "roomItem", rooms[key]);
+        }
+        $roomList.html( html );
+    });
+    pomelo.on('players', function (msg) {
+        var players=msg.data;
+        var roomPlayers = players;
+        if(currRoomId){
+            roomPlayers = [];
+            for(var userId in players){
+                var player = players[userId];
+                // 是选中房间的成员
+                if(player.roomId == currRoomId){
+                    roomPlayers[userId] = player;
+                }
+            }
+        }
+        var html = "";
+        for(var key in roomPlayers){
+            html +=tmpl( "playerItem", roomPlayers[key]);
+        }
+        $playerList.html( html );
+    });
+    pomelo.on('userplayers', function (msg) {
+        var userplayers=msg.data;
+        tip(JSON.stringify(userplayers));
+    });
+
+    pomelo.on('disconnect', function () {
+        alert('掉线了!!!');
+    });
+    function tip(str){
+        //$('#tip').append(str + '<br>');
+        console.log(str);
+    }
+    function toString(obj) {
+        var str = '';
+        for(var i = 0; i < obj.length; i++){
+            for(var prototype in obj){
+                str = str + '\n' + prototype + obj[prototype];
+            }
+        }
+        return str;
+    }
+    $("#roomList tr").live("click",function(e){
+        var $el = $( this);
+        var roomid = $($el.find(".roomId")[0]).html();
+        currRoomId = roomid;
+        $el.siblings('.select').removeClass('select');
+        $el.toggleClass('select')
+        console.log(currRoomId);
+    })
+</script>
+</body>
+</html>

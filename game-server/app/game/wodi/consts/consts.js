@@ -1,0 +1,106 @@
+/**
+ * Created by yang_ruidong on 13-11-20.
+ * 游戏常量参数
+ */
+module.exports = {
+	// 成功返回码
+	SUCCESS:0,
+	SYSTEM_ERROR:-1000,
+	// 错误码
+	ERROR: {
+		CHANNEL:{
+			NOT_EXISTS:-101			// 频道不存在
+		},
+		USER:{
+			NOT_EXISTS:-201,		// 用户不存在
+			UN_LOGIN:-202			// 用户没有登录
+		},
+		PLAYER:{
+			NOT_EXISTS:-301,		// 玩家不存在
+			ALREADY_VOTE:-302,		// 玩家已经投票
+			ALREADY_IN_ROOM:-303,	// 玩家已经在房间内
+			YOU_ARE_DIE:-304,		// 玩家已经死亡,不能进行此操作
+			HE_WAS_DIE:-305,		// 目标玩家已经死亡,不能投他
+			HE_WAS_SAID:-306		// 你已经描述了
+		},
+		ROOM:{
+			NOT_EXISTS:-401,		// 房间不存在
+			NOT_ENOUGH_MEMBER:-402,	// 房间玩家数不足
+			AUTH_ACCESS:-403,		// 没有房间操作权限
+			ERROR_STATUS_LOCK:-404,	// 当前房间状态不能加锁
+			JOIN_LOCK:-405,			// 房间已加锁,无法加人
+			FULL_MEMBER:-406
+		},
+		GAME:{
+			STATUS_ERROR:-501,		// 游戏状态不正确
+			CANT_VOTE_MYSELF:-502,	// 不能投自己
+			CANT_VOTE_TARGET:-503	// 不能投他[非平票玩家]
+		}
+	},
+	TIPS:{
+		101:'频道不存在',
+		201:'用户不存在',
+		202:'用户没有登录',
+		301:'玩家不存在',
+		302:'玩家已经投票',
+		303:'玩家已经在房间内',
+		304:'玩家已经死亡,不能进行此操作',
+		305:'目标玩家已经死亡,不能投他',
+		306:'你已经描述了',
+		401:'房间不存在',
+		402:'房间玩家数不足',
+		403:'没有房间操作权限',
+		404:'当前房间状态不能加锁',
+		405:'房间已加锁,无法加人',
+		501:'游戏状态不正确',
+		502:'不能投自己',
+		503:'不能投他[非平票玩家]'
+	},
+	// 游戏状态
+	GAME_STATUS:{
+		READY:0,	// 准备状态[列表界面]
+		START:1,	// 游戏开始[关键词界面]
+		VOTE:2,		// 投票环节[投票界面]
+		REVOTE:3,	// 重投票环节[重投票界面]
+		RESULT:4,	// 投死一人[结果页面]
+		SAMEVOTE:5,	// 平票结果[结果页面]
+		OVER:6		// 游戏结束[结束页面]
+	},
+	// 房间类型
+	ROOM_TYPE:{
+		ONLINE:1,
+		WECHAT:2,
+		FACE:3
+	},
+	// 投票环节状态
+	VOTE_STATUS:{
+		NORMAL:0,//正常投票
+		REVOTE:1//重投票
+	},
+	// 玩家状态
+	PLAYER_STATUS:{
+		NORMAL:0,//正常状态
+		REVOTE:1//重新参与投票
+	},
+	USER_STATUS:{
+		ONLINE:1,
+		OFFLINE:0
+	},
+	//最小人数为3人
+	MIN_PLAYER_NUM:3,
+	//最大人数为20人
+	MAX_PLAYER_NUM:8,
+	UC_WIN_PLAYER_NUM:2,//卧底获胜游戏人数
+	// 投票结果
+	VOTE_RESULT:{
+		UC_FIND:1,//找到卧底
+		UC_WIN:2,//卧底获胜
+		PEOPLE_DIE:3,//平民被冤死
+		PEOPLE_WIN:4,//平民获胜
+		MULTI:5//多人同票
+	},
+	SYSTEM:{
+		OFFLINE_TIME_OUT:6,
+		TIME_OUT_CHECK_CYCLE:10
+	}
+}
